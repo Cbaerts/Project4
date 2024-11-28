@@ -64,6 +64,8 @@ def sch_eqn(nspace, ntime, tau, method='ftcs', length=200, potential = [], wpara
         # do stability check
         eig = spectral_radius()
         i = 1
+        if eig >= tau:
+            return 'This shit is unstable'
     elif method == 'crank':
         # Ignore stability check
         i = 1
