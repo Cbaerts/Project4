@@ -21,9 +21,11 @@ xArray = np.linspace(-length/2, length/2, nSpace)
 sigma = 0.2
 k = 35
 params = [sigma, k, xArray]
+V = np.ones(nspace)
 
 # Constants
 hBar = 1
+h = hBar*2*np.pi
 mass = 1/2
 imaginary = 1j
 
@@ -92,7 +94,7 @@ def spectral_radius(matrix):
     eigenvalues = np.linalg.eig(matrix)[0]
     return np.max(abs(eigenvalues))
 
-def sch_eqn(nspace, ntime, tau, method='ftcs', length=200, potential = [], wparam = [10, 0, 0.5]):
+def sch_eqn(nspace, ntime, tau, potential, method='ftcs', length=200, wparam = [10, 0, 0.5]):
     '''
     nspace is the number of spatial grid points, 
     ntime is the number of time steps to be evolved,
@@ -102,17 +104,36 @@ def sch_eqn(nspace, ntime, tau, method='ftcs', length=200, potential = [], wpara
     potential: 1-D array giving the spatial index values at which the potential V(x) should be set to 1. Default to empty. For example, [25, 50] will set V[25] = V[50] = 1.
     wparam: list of parameters for initial condition [sigma0, x0, k0]. Default [10, 0, 0.5].
     '''
-
+    tArray = np.arange(0, ntime*tau, tau)
     wavePacket = make_initialcond(wparam, xArray)
-    V = np.ones(nspace)
-    if method == 'ftcs':
+    psi = np.zeros((ntime, nspace), dtype=complex)
+    psi[0, :] = wavePacket
+    V = potential
+    I = np.eye(nspace)
+
+    if method.lower() in ['ftcs', '1']:
         # do stability check
-        eig = spectral_radius()
-        i = 1
-        if eig >= tau:
+        constant = -hBar**2/(2*mass*h**2)
+        H = make_tridiagonal(nspace, constant, 1-2*constant, constant)
+        H = H * (imaginary*tau/hBar)
+        # eig = spectral_radius(psi) # not sure if for psi or H
+        eig = spectral_radius(H)
+        if eig >= 1:
             return 'This shit is unstable'
-    elif method == 'crank':
+        else: 
+            print('This integration is gonna be cool')
+            for time in range(1, ntime):
+                psi[time, :] = np.dot((I-H), psi[time-1, :])
+
+    elif method.lower() in ['crank', 'crank-nicholson', '2']:
         # Ignore stability check
         i = 1
     else:
         print('Choose an actual method you donkey!')
+
+    prob = np.abs(psi*np.conjugate(psi))
+    return psi, xArray, tArray, prob
+
+
+testy = sch_eqn(nSpace, ntime, tau, V)
+print(testy)
