@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # method = input('Choose a numerical method, FTCS or Crank-Nicholson: ')
 method = 'ftcs'
 # nspace = int(input('Enter the number of grid points: '))
-nspace = 200
+nspace = 500
 # ntime = int(input('Enter number of steps: '))
 ntime = 500
 # length = float(input("Enter length of computation region: "))
@@ -14,8 +14,7 @@ length = 200
 tau = 1
 
 #Initiates position grid.
-nSpace = 300
-xArray = np.linspace(-length/2, length/2, nSpace)
+xArray = np.linspace(-length/2, length/2, nspace)
 
 #Parameters for initial condition function.
 sigma = 0.2
@@ -54,8 +53,7 @@ def make_tridiagonal(N, b, d, a):
     aMatrix, bMatrix, dMatrix = a*np.eye(N, k=1), b*np.eye(N, k=-1), d*np.eye(N, k=0)
     matrix = matrix + aMatrix + bMatrix + dMatrix
 
-    matrix[0, -1], matrix[-1, -2] = b, b
-    matrix[-1, -1] = d
+    matrix[0, -1] = b
     matrix[-1, 0]  = a
     return matrix
 
@@ -110,25 +108,31 @@ def sch_eqn(nspace, ntime, tau, potential, method='ftcs', length=200, wparam = [
     psi[0, :] = wavePacket
     V = potential
     I = np.eye(nspace)
+    constant = -hBar**2/(2*mass*h**2)
+    print(constant)
 
     if method.lower() in ['ftcs', '1']:
-        # do stability check
-        constant = -hBar**2/(2*mass*h**2)
-        H = make_tridiagonal(nspace, constant, 1-2*constant, constant)
+        # eqn 9.31
+        H = make_tridiagonal(nspace, constant, 1+2*constant, constant)
         H = H * (imaginary*tau/hBar)
         eig = spectral_radius(H) 
-        if eig >= 2:
+        if eig >= 1:
             return 'This matrix is unstable'
         else: 
             print('This integration is gonna be cool')
-            for time in range(1, ntime):
-                psi[time, :] = np.dot((I-H), psi[time-1, :])
+            for n in range(1, ntime):
+                psi[n, :] = np.dot((I-H), psi[n-1, :])
 
     elif method.lower() in ['crank', 'crank-nicholson', '2']:
-        # Ignore stability check
-        i = 1
+        # 9.46
+        H = make_tridiagonal(nspace, constant, -2*constant, constant)
+        # 9.40
+        HN = np.dot(np.linalg.inv(I + (imaginary*tau/2/hBar)*H), I - (imaginary*tau/2/hBar)*H)
+        for n in range(1, ntime):
+            psi[n, :] = np.dot(HN, psi[n-1, :])
+            
     else:
-        print('Choose an actual method you donkey!')
+        return 'Choose an actual method you donkey!'
 
     prob = np.abs(psi*np.conjugate(psi))
     return psi, xArray, tArray, prob
@@ -162,5 +166,8 @@ def sch_plot(solution, figure):
     return 'Hello Earth'
 # figure = [input("Do you want psi plot (Y/N): "), input("Do you want prob plot (Y/N): ")]
 figure = ['Y','Y']
-testy = sch_eqn(nSpace, ntime, tau, V)
-apple = sch_plot(testy, figure)
+testy = sch_eqn(nspace, ntime, tau, V)
+if isinstance(testy, str):
+    print(testy)
+else:
+    apple = sch_plot(testy, figure)
