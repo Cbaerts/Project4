@@ -116,10 +116,9 @@ def sch_eqn(nspace, ntime, tau, potential, method='ftcs', length=200, wparam = [
         constant = -hBar**2/(2*mass*h**2)
         H = make_tridiagonal(nspace, constant, 1-2*constant, constant)
         H = H * (imaginary*tau/hBar)
-        # eig = spectral_radius(psi) # not sure if for psi or H
-        eig = spectral_radius(H)
-        if eig >= 1:
-            return 'This shit is unstable'
+        eig = spectral_radius(H) 
+        if eig >= 2:
+            return 'This matrix is unstable'
         else: 
             print('This integration is gonna be cool')
             for time in range(1, ntime):
@@ -134,6 +133,34 @@ def sch_eqn(nspace, ntime, tau, potential, method='ftcs', length=200, wparam = [
     prob = np.abs(psi*np.conjugate(psi))
     return psi, xArray, tArray, prob
 
-
+def sch_plot(solution, figure):
+    psi, xArray, tArray, prob = solution
+    if figure[0].upper() == 'Y':
+        plt.subplot()
+        for i,T in enumerate(tArray):
+                if i%100 == 0:
+                    plt.plot(xArray, np.real(psi[i]), label=f"Time = {T}")
+    plt.title("Solution to The Schrodinger Equation")
+    plt.legend()
+    plt.xlabel("Position")
+    plt.ylabel("Ψ")
+    # plt.savefig("BaertsCedric_fig1_Project4")
+    plt.show()
+    plt.close()
+    if figure[1].upper() == 'Y':
+        for i, T in enumerate(tArray):
+                if i%100 == 0:
+                    plt.plot(xArray, np.real(prob[i]), label=f"Time = {T}")
+    plt.title("Probabilty of The Schrodinger Equation")
+    plt.legend()
+    plt.xlabel("Position")
+    plt.ylabel("Probablity")
+    # plt.savefig("BaertsCedric_fig2_Project4")
+    plt.show()
+    plt.close()
+    
+    return 'Hello Earth'
+# figure = [input("Do you want psi plot (Y/N): "), input("Do you want prob plot (Y/N): ")]
+figure = ['Y','Y']
 testy = sch_eqn(nSpace, ntime, tau, V)
-print(testy)
+apple = sch_plot(testy, figure)
