@@ -4,27 +4,20 @@ import matplotlib.pyplot as plt
 
 # method = input('Choose a numerical method, FTCS or Crank-Nicholson: ')
 method = 'ftcs'
-# nspace = int(input('Enter the number of grid points: '))
-nspace = 500
-# ntime = int(input('Enter number of steps: '))
-ntime = 500
-# length = float(input("Enter length of computation region: "))
+# number of grid points
+nspace = 1000
+# number of steps
+ntime = 1000
+# length of computation region
 length = 200
-# tau = int(input("Enter a value for tau: "))
-tau = 1
+# time increments
+tau = 0.04
 
 #Initiates position grid.
 xArray = np.linspace(-length/2, length/2, nspace)
 
-#Parameters for initial condition function.
-sigma = 0.2
-k = 35
-params = [sigma, k, xArray]
-V = np.ones(nspace)
-
 # Constants
 hBar = 1
-h = hBar*2*np.pi
 mass = 1/2
 imaginary = 1j
 
@@ -36,13 +29,12 @@ def make_tridiagonal(N, b, d, a):
     ----------
     N: Int
         The dimensions of the matrix NxN
-    a: float
-        Value of one above the diagonal
     b: float
         Value of one below the diagonal
     d: float
         Value of the diagonal
-
+    a: float
+        Value of one above the diagonal
     Return
     ---------
     matrix: ndarray
@@ -72,7 +64,7 @@ def make_initialcond(wParam, xArray):
     a0 (Numpy Array): Initial condition corresponding to the input position array.
     """
     sigma0, x0, k0 = wParam
-    psi = np.exp(imaginary*k0*xArray)*np.exp(-(xArray-x0)**2/(2*sigma0**2))/(sigma0*(np.pi)**0.5)**0.5
+    psi = np.exp(imaginary*k0*xArray)*np.exp(-(xArray-x0)**2/(2*sigma0**2))/(np.sqrt(sigma0*np.sqrt(np.pi)))    
     return psi
 
 def spectral_radius(matrix):
@@ -92,36 +84,36 @@ def spectral_radius(matrix):
     eigenvalues = np.linalg.eig(matrix)[0]
     return np.max(abs(eigenvalues))
 
-def sch_eqn(nspace, ntime, tau, potential, method='ftcs', length=200, wparam = [10, 0, 0.5]):
+def sch_eqn(nspace, ntime, tau, method='ftcs', length=200, wparam = [10, 0, 0.5]):
     '''
     nspace is the number of spatial grid points, 
     ntime is the number of time steps to be evolved,
     tau is the time step to be used
     method: string, either ftcs or crank
     length: float, size of spatial grid. Default to 200 (grid extends from -100 to +100)
-    potential: 1-D array giving the spatial index values at which the potential V(x) should be set to 1. Default to empty. For example, [25, 50] will set V[25] = V[50] = 1.
     wparam: list of parameters for initial condition [sigma0, x0, k0]. Default [10, 0, 0.5].
     '''
     tArray = np.arange(0, ntime*tau, tau)
     wavePacket = make_initialcond(wparam, xArray)
+    h = length/(nspace-1)
     psi = np.zeros((ntime, nspace), dtype=complex)
     psi[0, :] = wavePacket
-    V = potential
     I = np.eye(nspace)
     constant = -hBar**2/(2*mass*h**2)
-    print(constant)
 
     if method.lower() in ['ftcs', '1']:
         # eqn 9.31
-        H = make_tridiagonal(nspace, constant, 1+2*constant, constant)
+        H = make_tridiagonal(nspace, constant, 1-2*constant, constant)
         H = H * (imaginary*tau/hBar)
-        eig = spectral_radius(H) 
-        if eig >= 1:
+        eig = spectral_radius(I-H) 
+
+        if eig > 1:
+            print(eig)
             return 'This matrix is unstable'
         else: 
             print('This integration is gonna be cool')
-            for n in range(1, ntime):
-                psi[n, :] = np.dot((I-H), psi[n-1, :])
+            for n in range(ntime-1):
+                psi[n+1, :] = np.dot((I-H), psi[n, :])
 
     elif method.lower() in ['crank', 'crank-nicholson', '2']:
         # 9.46
@@ -158,15 +150,15 @@ def sch_plot(solution, figure):
     plt.title("Probabilty of The Schrodinger Equation")
     plt.legend()
     plt.xlabel("Position")
-    plt.ylabel("Probablity")
+    plt.ylabel("Probablity %")
     # plt.savefig("BaertsCedric_fig2_Project4")
     plt.show()
     plt.close()
     
-    return 'Hello Earth'
+    return
 # figure = [input("Do you want psi plot (Y/N): "), input("Do you want prob plot (Y/N): ")]
 figure = ['Y','Y']
-testy = sch_eqn(nspace, ntime, tau, V)
+testy = sch_eqn(nspace, ntime, tau)
 if isinstance(testy, str):
     print(testy)
 else:
