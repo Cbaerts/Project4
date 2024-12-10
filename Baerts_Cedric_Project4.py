@@ -74,7 +74,7 @@ def spectral_radius(matrix):
     eigenvalues = np.linalg.eig(matrix)[0]
     return np.max(abs(eigenvalues))
 
-def sch_eqn(nspace, ntime, tau, method, length, wparam = [10, 0, 0.5]):
+def sch_eqn(nspace, ntime, tau, method, length, wparam):
     '''
     Parameters
     ---------
@@ -195,7 +195,7 @@ def sch_plot(solution, figure):
     return
 
 # Ask for input parameters
-method = input('Choose a numerical method, FTCS or Crank-Nicholson: ')
+method = input('Choose a numerical method, 1) FTCS or 2) Crank-Nicholson: ')
 nspace = int(input('Enter the number of grid points: '))
 ntime = int(input('Enter number of steps: '))
 length = float(input("Enter length of computation region: "))
