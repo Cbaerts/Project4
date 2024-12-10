@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# https://github.com/Cbaerts/Project4
+
 # Constants
 hBar = 1
 mass = 1/2
@@ -36,7 +38,6 @@ def make_tridiagonal(N, b, d, a):
 def make_initialcond(wParam, xArray):
     """
     Takes a position array as input and returns the initial condition for the positions in the input array.
-    The initial condition is a gaussian function times a cosine function.
 
     Parameters
     ----------
@@ -68,13 +69,13 @@ def spectral_radius(matrix):
 
     Return
     ---------
-    np.max(abs(eigenvalues)): float
+    eigenvalues: float
         The absolute max of the eigenvalues array
     '''
-    eigenvalues = np.linalg.eig(matrix)[0]
-    return np.max(abs(eigenvalues))
+    eigenvalues = np.max(abs(np.linalg.eig(matrix)[0]))
+    return eigenvalues
 
-def sch_eqn(nspace, ntime, tau, method, length, wparam):
+def sch_eqn(nspace, ntime, tau, method, length=200, wparam=[10, 0, 0.5]):
     '''
     Parameters
     ---------
