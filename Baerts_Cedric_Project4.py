@@ -165,7 +165,7 @@ def sch_plot(solution, figure):
     # Set solutions to their respective arrays
     psi, xArray, tArray, prob = solution
     # Set a number so always 5 timesteps are shown
-    num = len(psi)/5
+    num = int(len(psi)/5)
     # Checks if psi plot wants to be created
     # Plots psi
     if figure[0].upper() == 'Y':
@@ -173,6 +173,7 @@ def sch_plot(solution, figure):
         for i,T in enumerate(tArray):
                 if i % num == 0:
                     plt.plot(xArray, np.real(psi[i]), label=f"Time step= {i}")
+        plt.plot(xArray, np.real(psi[-1]), label=f"Time step = {len(tArray)}")
     plt.title("Wave Function of the Schrodinger Equation")
     plt.legend()
     plt.xlabel("Position")
@@ -186,6 +187,7 @@ def sch_plot(solution, figure):
         for i, T in enumerate(tArray):
                 if i % num == 0:
                     plt.plot(xArray, np.real(prob[i]), label=f"Time step = {i}")
+        plt.plot(xArray, np.real(prob[-1]), label=f"Time step = {len(tArray)}")
     plt.title("Probabilty of The Schrodinger Equation")
     plt.legend()
     plt.xlabel("Position")
