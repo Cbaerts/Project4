@@ -75,7 +75,7 @@ def spectral_radius(matrix):
     eigenvalues = np.max(abs(np.linalg.eig(matrix)[0]))
     return eigenvalues
 
-def sch_eqn(nspace, ntime, tau, method, length=200, wparam=[10, 0, 0.5]):
+def sch_eqn(nspace, ntime, tau, method='ftcs', length=200, potential=[] ,wparam=[10, 0, 0.5]):
     '''
     Parameters
     ---------
@@ -87,6 +87,8 @@ def sch_eqn(nspace, ntime, tau, method, length=200, wparam=[10, 0, 0.5]):
         The time step to be used
     method: str
         Either ftcs or crank-nicholson
+    potential: nd.array
+        An array of potential value w/ (nspace,) shape 
     length: float 
         size of spatial grid. Default to 200 (grid extends from -100 to +100)
     wparam: nd.array
@@ -103,6 +105,8 @@ def sch_eqn(nspace, ntime, tau, method, length=200, wparam=[10, 0, 0.5]):
     prob: nd.array
         [ntime x nspace] Array for the probabilities at all points and timesteps
     '''
+    # sets pontential
+    potential = np.ones(nspace)
     # Sets time stamps
     tArray = np.arange(0, ntime*tau, tau)
     # Create intial wavepacket
@@ -209,13 +213,15 @@ tau = float(input("Enter a value for tau: "))
 # length = 200
 # tau = 0.01
 
+V = np.ones(nspace)
+
 # Initiates position grid.
 xArray = np.linspace(-length / 2, length / 2, nspace)
 # Initial wave packet parameters
 parameters = [10, 0, 0.5]
 
 # Call your function with the provided parameters
-solution = sch_eqn(nspace, ntime, tau, method, length, parameters)
+solution = sch_eqn(nspace, ntime, tau, method, length, V, parameters)
 
 # Checks if your solution returned an error or was right
 if isinstance(solution, str):
